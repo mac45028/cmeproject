@@ -17,9 +17,11 @@ Link:https://help.github.com/articles/generating-ssh-keys/
 * cd "your directory path"
 * git add file1, file2
 git commit -m “your message”
+
 ####Push####
 * git push
 * if fail? Pull & Merge
+
 ####Pull####
 * Git pull
 enter into merge mode (<b>Be careful!</b>)
