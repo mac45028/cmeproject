@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>csvinput_call_RunRules</name>
+	<name>tutorial-chap04-example2-simplekernel_RunRules</name>
 	<comment>Simulation</comment>
 	<manageMaxCompiler>true</manageMaxCompiler>
 	<manageMaxGenFD>true</manageMaxGenFD>

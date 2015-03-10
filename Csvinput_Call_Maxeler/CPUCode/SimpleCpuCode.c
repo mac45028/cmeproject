@@ -16,8 +16,11 @@
 int main()
 {
 	FILE* stream = fopen("futuresTradeSorted.csv", "r");
+	FILE *outputcsv;
+	    outputcsv = fopen("output.csv", "w");
 	    int date[464130];
 	    float time_to_maturity[464130];
+	    int delivery_date[464130];
 	    float price[464130];
 	    char line[1024];
 	    int i=0;
@@ -33,6 +36,7 @@ int main()
 	            tok = strtok(NULL, ",\n");
 	            int tmp_time;
 	            sscanf(tok,"%d", &tmp_time);
+	            delivery_date[i]=tmp_time;
 	            int year=(tmp_time-1503)/100;
 	            time_to_maturity[i]=(year*365+(tmp_time/100-year-15)*30+40)/365.0;
 	            tok = strtok(NULL, ",\n");
@@ -44,28 +48,33 @@ int main()
 	        free(tok);
 	    }
 
-	    for (int i=0;i <100; i++)
+	/*    for (int i=0;i <100; i++)
 	    {
 	        printf("%d\t%f\t%f\t\n", date[i],time_to_maturity[i],price[i]);
 	    }
 
-
+*/
 
     //price , strike, 0.01, 0, 0.28, 0.115
 //	float para [6] = {100,105,0.01,0.0,0.28,0.115};
     float para[6]={0};
-    para[0]=price[0]/100.0;
-    para[1]=price[0]/100.0;
+    int idx=0;
+   while (idx<=464130)
+   {
+    para[0]=price[idx]/100.0;
+    para[1]=price[idx]/100.0;
     para[2]=0.01;
     para[3]=0;
     para[4]=0.28;
     para[5]=time_to_maturity[0];
-    printf("%f %f ",para[0],para[1]);
+ //   printf("%f %f %f\n",para[0],para[1], para[5]);
 	float* y = malloc(sizeof(float)*8) ;
 
 	Simple(para,64,y);
 
 	printf("Call Price = %f\n", y[0]);
-
+	fprintf(outputcsv, "%d, %d, %f,%f \n", date[idx],delivery_date[idx],price[idx], y[0]);
+	idx++;
+   }
 	return 0;
 }
