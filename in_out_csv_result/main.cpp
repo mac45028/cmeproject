@@ -85,26 +85,17 @@ int main() {
         string initial_date=dates[index];
 
       //  cout<<date_call<<" "<<strike<<endl;
-        if (initial_date==date_call)
-        {
-            double tmp_result=return_Whaley(future_prices[index], strike, 0.01, 0, 0.35, 0.115);
-            calloutputcsv << initial_date<<','<<strike<<","<<future_prices[index]<<','<<tmp_result<<'\n' ;
-          //  cout << initial_date<<','<<strike<<","<<future_prices[index]<<','<<tmp_result<<'\n' ;
-
-        }
-        else
-        {
-            index++;
-            initial_date=dates[index];
-            double tmp_result=return_Whaley(future_prices[index], strike, 0.01, 0, 0.35, 0.115);
-            calloutputcsv << initial_date<<','<<strike<<","<<future_prices[index]<<','<<tmp_result<<'\n' ;
-         //   cout << initial_date<<','<<strike<<","<<future_prices[index]<<','<<tmp_result<<'\n' ;
-
-        }
         
+        for (int i=0; i<dates.size(); i++)
+        {
+            cout<<strike<<endl;
+            double tmp_result=return_Whaley(future_prices[i], strike, 0.01, 0, 0.25, 0.115);
+            calloutputcsv << dates[i]<<','<<strike<<","<<future_prices[i]<<','<<tmp_result<<'\n' ;
+        }
+             
     }
     //price = price, strike: 50, 55, 45, 0.01, 0, 0.28, 0.115
-    cout_Whaley(56.2948, 39.5, 0.01, 0, 0.35, 0.115);
+    cout_Whaley(56.2948, 39.5, 0.01, 0, 0.25, 0.115);
     cout_Whaley(100, 95, 0.05, 0, 0.1, 1);
     cout_Whaley(100, 100, 0.05, 0, 0.1, 1);
     cout_Whaley(100, 105, 0.05, 0, 0.1, 1);
