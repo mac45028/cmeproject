@@ -72,9 +72,57 @@ int main()
 	float* y = malloc(sizeof(float)*8) ;
 
 	Simple(para,64,y);
-
 	printf("Price = %f %f\n", y[0],y[1]);
 	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+
+	 para[1]=price[idx]/100.0+1;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+	para[1]=price[idx]/100.0-1;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+
+	 para[1]=price[idx]/100.0+2;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+	para[1]=price[idx]/100.0-2;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+
+
+	 para[1]=price[idx]/100.0+5;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+	para[1]=price[idx]/100.0-5;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+
+	 para[1]=price[idx]/100.0+10;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+	para[1]=price[idx]/100.0-10;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+
+
+	 para[1]=price[idx]/100.0+20;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+	para[1]=price[idx]/100.0-20;
+	Simple(para,64,y);
+	printf("Price = %f %f\n", y[0],y[1]);
+	fprintf(outputcsv, "%d, %d,%f,%f, %fC,%fP \n", date[idx],delivery_date[idx],price[idx],para[1], y[1],y[0]);
+
+
 	idx++;
    }
 	return 0;
