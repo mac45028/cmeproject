@@ -83,7 +83,7 @@ int main()
 	        free(tok);
 	    }
 
-	printf("Read option data completed.\nStart reading Underlying asset data\n");
+	printf("Read option data completed.\nStart reading Underlying asset data for implied volatility calculation.\n");
 
 	FILE* stream2 = fopen("/home/demo/Desktop/underlying_asset_data.csv", "r");
 		//FILE *outputcsv;
@@ -93,6 +93,7 @@ int main()
 		    float underlying_time_to_maturity[sample_size];
 		    int underlying_delivery_date[sample_size];
 		    float underlying_price[sample_size];
+		    float underlying_strike[sample_size];
 		    //char line[1024];
 		    i=0;
 		    while (fgets(line, 1024, stream2))
@@ -129,12 +130,12 @@ int main()
         	float low_vol = 0.01;
         	float high_vol = 0.9;
         	float epsilon = 0.001;
-        	float market_price = ;//real market price
+        	float market_price = price[idx];//real market price
 
         	// Create the initial x mid-point value
         	float seed_sigma = 0.5 * (low_vol + high_vol);
-        	float temp_price = type==0?option_price_call_black_scholes(price[idx]/100.0,price[idx]/100.0,0.01,seed_sigma,time_to_maturity[idx])\
-        			:option_price_put_black_scholes(price[idx]/100.0,price[idx]/100.0,0.01,seed_sigma,time_to_maturity[idx]);//g(x);
+        	float temp_price = type==0?option_price_call_black_scholes(underlying_price[idx]/100.0,underlying_strike[idx]/100.0,0.01,seed_sigma,underlying_time_to_maturity[idx])\
+        			:option_price_put_black_scholes(underlying_price[idx]/100.0,underlying_strike[idx]/100.0,0.01,seed_sigma,underlying_time_to_maturity[idx]);//g(x);
 
         	do {
         			if (temp_price < market_price) {
@@ -146,8 +147,8 @@ int main()
         			}
 
         			seed_sigma = 0.5 * (low_vol + high_vol);
-        			temp_price = type==0?option_price_call_black_scholes(price[idx]/100.0,price[idx]/100.0,0.01,seed_sigma,time_to_maturity[idx])\
-        			    			:option_price_put_black_scholes(price[idx]/100.0,price[idx]/100.0,0.01,seed_sigma,time_to_maturity[idx]);
+        			temp_price = type==0?option_price_call_black_scholes(underlying_price[idx]/100.0,underlying_strike[idx]/100.0,0.01,seed_sigma,underlying_time_to_maturity[idx])\
+        			    			:option_price_put_black_scholes(underlying_price[idx]/100.0,underlying_strike[idx]/100.0,0.01,seed_sigma,underlying_time_to_maturity[idx]);
         		} while (fabs(temp_price - market_price) > epsilon);
 
         	sample_sigma += seed_sigma;
