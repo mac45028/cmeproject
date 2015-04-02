@@ -52,8 +52,8 @@ double option_price_put_black_scholes( double S,      // spot price
 int main()
 {
 	FILE* stream = fopen("/home/demo/Desktop/futuresTradeSorted.csv", "r");
-	FILE *outputcsv;
-	    outputcsv = fopen("output.csv", "w");
+	//FILE *outputcsv;
+	    //outputcsv = fopen("output.csv", "w");
 	    int date[464130];
 	    float time_to_maturity[464130];
 	    int delivery_date[464130];
@@ -83,15 +83,53 @@ int main()
 	        free(tok);
 	    }
 
-	printf("Read CSV complete\n");
-/*
+	printf("Read option data completed.\nStart reading Underlying asset data\n");
+
+	FILE* stream2 = fopen("/home/demo/Desktop/underlying_asset_data.csv", "r");
+		//FILE *outputcsv;
+		    //outputcsv = fopen("output.csv", "w");
+			int sample_size = 100;
+		    int underlying_date[sample_size];
+		    float underlying_time_to_maturity[sample_size];
+		    int underlying_delivery_date[sample_size];
+		    float underlying_price[sample_size];
+		    //char line[1024];
+		    i=0;
+		    while (fgets(line, 1024, stream2))
+		    {
+		        char* tok = strdup(line);
+		        for (tok = strtok(line, ",");
+		             tok && *tok;
+		             tok = strtok(NULL, ",\n"))
+		        {
+		            sscanf(tok,"%d", &underlying_date[i]);
+		            tok = strtok(NULL, ",\n");
+		            int tmp_time;
+		            sscanf(tok,"%d", &tmp_time);
+		            underlying_delivery_date[i]=tmp_time;
+		            int year=(tmp_time-1503)/100;
+		            underlying_time_to_maturity[i]=(year*365+(tmp_time/100-year-15)*30+40)/365.0;
+		            tok = strtok(NULL, ",\n");
+		            sscanf(tok,"%f", &underlying_price[i]);
+		            tok = strtok(NULL, ",\n");
+		        }
+		        // NOTE strtok clobbers tmp
+		        i++;
+		        free(tok);
+		    }
+
+	int idx=0;
+
+	float sample_sigma = 0.0;
+
+	while(idx<sample_size)//find the sample mean of Volatility of 100 sample
+	{
     //calculate Implied volatility by bisection method
     int type = 0;//for call option, or 1 for put option
-    int idx=0;
         	float low_vol = 0.01;
         	float high_vol = 0.9;
-        	float epsilon = 0.00001;
-        	float market_price = 1.93;//option price
+        	float epsilon = 0.001;
+        	float market_price = ;//real market price
 
         	// Create the initial x mid-point value
         	float seed_sigma = 0.5 * (low_vol + high_vol);
@@ -112,10 +150,15 @@ int main()
         			    			:option_price_put_black_scholes(price[idx]/100.0,price[idx]/100.0,0.01,seed_sigma,time_to_maturity[idx]);
         		} while (fabs(temp_price - market_price) > epsilon);
 
-        	float sigma = seed_sigma;
-*/
+        	sample_sigma += seed_sigma;
 
-	int size = 8192;//number of test case
+	}
+
+	sample_sigma/=sample_size;
+
+	printf("Sample sigma=%f",sample_sigma);
+
+	int size = 1024;//number of test case
 
     float call_price[size];
     float put_price[size];
@@ -130,7 +173,7 @@ int main()
     	price_arr[i] = price[i]/100.0;
     	strike_arr[i] = price_arr[i];
     	rate[i]=0.03;//test value
-    	sigma_test[i]=0.25;//test value
+    	sigma_test[i]=sample_sigma;//test value
     	call_price[i]=0;
     	put_price[i]=0;
     	ttm[i]=time_to_maturity[i];
