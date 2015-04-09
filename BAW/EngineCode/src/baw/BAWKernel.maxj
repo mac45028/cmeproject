@@ -76,7 +76,7 @@ class BAWKernel extends Kernel
 		DFEVar sigma = io.input("sigma", dfeFloat(8,24));
 		DFEVar time  = io.input("time", dfeFloat(8,24));
 
-		DFEVar ACCURACY = constant.var(dfeFloat(8,24),1.0e-4);
+		DFEVar ACCURACY = constant.var(dfeFloat(8,24),1.0e-5);
 		KernelMath.Range log_range = new KernelMath.Range(0.0,100.0);
 		DFEVar C = constant.var(dfeFloat(8,24),0.0);
 	    DFEVar c = constant.var(dfeFloat(8,24),0.0);
@@ -109,7 +109,7 @@ class BAWKernel extends Kernel
 	    DFEVar flag1_put = constant.var(dfeBool(), 0);
 	    DFEVar flag2_put = constant.var(dfeBool(),0);
 
-	    for (int i = 0; i < 10; i=i+1)
+	    for (int i = 0; i < 15; i=i+1)
 	    {
 	    	d1 = (KernelMath.log(log_range, (Si_put*X_inv),dfeFloat(8, 24)) + (0.5 * sigma_sqr) * time) * (sigma_time_sqrt_inv);
 	    	p = Black_Scholes_put(Si_put, X, exp_time, sigma_time_sqrt,d1);
