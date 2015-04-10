@@ -49,8 +49,8 @@ public class BAWManager {
 		manager.setEnableStreamStatusBlocks(false);
 		BuildConfig buildConfig = manager.getBuildConfig();
 		buildConfig.setBuildEffort(Effort.VERY_HIGH);
-		buildConfig.setMPPRCostTableSearchRange(params.getMPPRStartCT(), params.getMPPREndCT());
-		buildConfig.setMPPRParallelism(params.getMPPRThreads());
-		buildConfig.setMPPRRetryNearMissesThreshold(params.getMPPRRetryThreshold());
+		//buildConfig.setMPPRCostTableSearchRange(params.getMPPRStartCT(), params.getMPPREndCT());
+		//buildConfig.setMPPRParallelism(params.getMPPRThreads());
+		//buildConfig.setMPPRRetryNearMissesThreshold(params.getMPPRRetryThreshold());
 	}
 }

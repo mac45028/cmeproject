@@ -7,7 +7,7 @@
 #include "MaxSLiCInterface.h"
 #include "Maxfiles.h"
 
-//#define interest_rate 0.01
+#define risk_free 0.006
 
 inline double N(double *z) {
     if ((*z) > 6.0) { return 1.0; }; // this guards against overflow
@@ -57,24 +57,104 @@ inline double option_price_put_black_scholes( const double *S,      // spot pric
     return (*K)*exp(-(*r)*(*time))*N(p_d2) - (*S)*N(p_d1);
 }
 
+double get_lagged_underly(int current_t,int lag,const double *underly,const int *second){
+
+	if(lag==-1){//used previous trading data
+		if(current_t>0)return underly[current_t-1];
+		else return -1;
+	}
+
+	else if(lag == 0){
+		return underly[current_t];
+	}
+
+	else{
+
+		int current_second = second[current_t];
+
+		for(int i=current_t;i>0;i--){
+			if(current_second-second[i]>=lag){
+				return underly[i];
+			}
+		}
+
+			//printf("No underlying that is older for desired lag, use current underlying.\n");
+			return -1;
+
+	}
+}
+
+double get_lagged_strike(int current_t,int lag,const double *k,const int *second){
+
+	if(lag==-1){//used previous trading data
+		if(current_t>0)return k[current_t-1];
+		else return -1;
+	}
+
+	else if(lag == 0){
+		return k[current_t];
+	}
+
+	else{
+
+		int current_second = second[current_t];
+
+		for(int i=current_t;i>0;i--){
+			if(current_second-second[i]>=lag){
+				return k[i];
+			}
+		}
+			//printf("No underlying that is older for desired lag, use current underlying.\n");
+			return -1;
+
+	}
+}
+
+double get_lagged_ttm(int current_t,int lag,const double *t,const int *second){
+
+	if(lag==-1){//used previous trading data
+		if(current_t>0)return t[current_t-1];
+		else return -1;
+	}
+
+	else if(lag == 0){
+		return t[current_t];
+	}
+
+	else{
+
+		int current_second = second[current_t];
+
+		for(int i=current_t;i>0;i--){
+			if(current_second-second[i]>=lag){
+				return t[i];
+			}
+		}
+
+			//printf("No underlying that is older for desired lag, use current underlying.\n");
+			return -1;
+
+	}
+}
+
 int main()
 {
 
-	FILE* call_option_stream = fopen("/home/demo/Desktop/put_merge_output.csv", "r");
-	FILE *output = fopen("/home/demo/Desktop/put_merge_output_result.csv", "w");
+	FILE* call_option_stream = fopen("/home/demo/Desktop/call_merge_output.csv", "r");
+	FILE *output = fopen("/home/demo/Desktop/call_merge_output_result.csv", "w");
 	//FILE* put_option_stream = fopen("/home/demo/Desktop/put_merge_output.csv", "r");
 
 	//7081 line for call
 	//9065 line for put
-		int second[9065];
-		double time_to_maturity[9065];
-		int delivery_date[9065];
-		double underlying[9065];
-		double bid[9065];
-		double ask[9065];
-		double strike[9065];
+		int second[7081];
+		double time_to_maturity[7081];
+		int delivery_date[7081];
+		double underlying[7081];
+		double bid[7081];
+		double ask[7081];
+		double strike[7081];
 
-		double midprice[9065];
+		double midprice[7081];
 
 	    char line[1024];
 	    int i=0;
@@ -97,9 +177,9 @@ int main()
 	            int year=(tmp_time-1503)/100;
 	            time_to_maturity[i]=(year*365+(tmp_time/100-year-15)*30+40)/365.0;
 	            tok = strtok(NULL, ",\n");
-	            //Underlying
-	            sscanf(tok,"%lf", &underlying[i]);
-	            underlying[i]/=100.0;
+	            //strike
+	            sscanf(tok,"%lf", &strike[i]);
+	            strike[i]/=100.0;
 	            tok = strtok(NULL, ",\n");
 	            //bid
 	            sscanf(tok,"%lf", &bid[i]);
@@ -109,10 +189,11 @@ int main()
 	            sscanf(tok,"%lf", &ask[i]);
 	            ask[i]/=100.0;
 	            tok = strtok(NULL, ",\n");
-	            //strike
-	            sscanf(tok,"%lf", &strike[i]);
-	            strike[i]/=100.0;
-	            tok = strtok(NULL, ",\n");
+	            //Underlying
+	           	sscanf(tok,"%lf", &underlying[i]);
+	           	underlying[i]/=100.0;
+	           	tok = strtok(NULL, ",\n");
+
 	            //mid_price
 	            midprice[i]=(bid[i]+ask[i])/2.0;
 
@@ -123,40 +204,48 @@ int main()
 	    }
 
 	printf("Read option data completed.\nStart reading Underlying asset data for implied volatility calculation.\n");
-     i=0;
+     //i=0;
 	//for(i=0;i<7081;i++)printf("Underly = %f, ttm = %f, bid = %f, ask = %f, strike = %f\n",underlying[i],time_to_maturity[i],bid[i],ask[i],strike[i]);
 
-int sample_size = 1000;
+int sample_size = 7081;
 
-double sigma = 0;
+
          //calculate Implied volatility by bisection method
-         int type = 1;//for call option, or 1 for put option
-         int idx=0;
-         int idx_factor=0;
+         int type = 0;//for call option, or 1 for put option
+         int idx=1;
+         float dynamic_sigma[7081];
+         //dynamic_sigma[0]=0.315;
 
+         double interest_rate = risk_free;
 
-         double interest_rate = 0.08;
-
-         while(idx+idx_factor<sample_size)
+         while(idx<sample_size)
          {
         	 double low_vol = 0.001;
         	 double high_vol = 1;
         	 double epsilon = 0.000001;
         	 double market_price = midprice[idx];//option price
         	 int iteration_count = 0;
-        	 int reject_data = 0;
+        	 double bst_underly = get_lagged_underly(idx,-1,underlying,second);
+        	 double bst_strike = get_lagged_strike(idx,0,strike,second);
+        	 double bst_ttm = get_lagged_ttm(idx,0,time_to_maturity,second);
+        	 if(bst_underly==-1){
+        		 bst_underly=underlying[idx];
+        		 //printf("%f,%f\n",bst_underly,underlying[idx-1]);
+        	 }
+        	 if(bst_strike==-1){
+        		 bst_strike=strike[idx];
+        	         	 }
+        	 if(bst_ttm==-1){
+        		 bst_ttm=time_to_maturity[idx];
+        	         	 }
 
-             	//double chk = 0;
-             	// Create the initial x mid-point value
         	 double seed_sigma =  0.5 * (low_vol + high_vol);
-        	 double temp_price = type==0?option_price_call_black_scholes(&underlying[idx],&strike[idx],&interest_rate,&seed_sigma,&time_to_maturity[idx])\
-             			:option_price_put_black_scholes(&underlying[idx],&strike[idx],&interest_rate,&seed_sigma,&time_to_maturity[idx]);//g(x);
+        	 double temp_price = type==0?option_price_call_black_scholes(&bst_underly,&bst_strike,&interest_rate,&seed_sigma,&bst_ttm)\
+             			:option_price_put_black_scholes(&bst_underly,&bst_strike,&interest_rate,&seed_sigma,&bst_ttm);//g(x);
 
              	while(fabs(temp_price - market_price)>epsilon) {
              		if(iteration_count>2500){
              			//printf("bisection not converged, discarded.\n");
-             			reject_data=1;
-             			idx_factor-=1;
              			break;
              		}
              			if (temp_price < market_price) {
@@ -168,28 +257,23 @@ double sigma = 0;
              			}
 
              			seed_sigma = 0.5 * (low_vol + high_vol);
-             			temp_price = type==0?option_price_call_black_scholes(&underlying[idx],&strike[idx],&interest_rate,&seed_sigma,&time_to_maturity[idx])\
-             			    			:option_price_put_black_scholes(&underlying[idx],&strike[idx],&interest_rate,&seed_sigma,&time_to_maturity[idx]);
+             			temp_price = type==0?option_price_call_black_scholes(&bst_underly,&bst_strike,&interest_rate,&seed_sigma,&bst_ttm)\
+             			    			:option_price_put_black_scholes(&bst_underly,&bst_strike,&interest_rate,&seed_sigma,&bst_ttm);
              			iteration_count++;
              			//printf("error = %f\n",fabs(temp_price - market_price));
 
              	}
 
-             	if(reject_data==0){
 
-             		sigma += seed_sigma;
-             	}
+             	dynamic_sigma[idx] = seed_sigma;
+
              	idx++;
 
          }
 
 
-
-
-         double sample_sigma = sigma/sample_size;
-
-	 printf("Implied Volatility calculation completed.");
-	 printf("\n\nSigma = %f\n\n",sample_sigma);
+	 printf("Implied Volatility calculation completed.\n");
+	 //printf("\n\nSigma = %f\n\n",sample_sigma);
 
 	int size = 2048;//number of test case
 
@@ -202,15 +286,18 @@ double sigma = 0;
     float ttm[size];
 
 
-    for(int i=0;i<size;i++){
+    for(int i=1;i<size;i++){
     	price_arr[i] = underlying[i];
     	strike_arr[i] = strike[i];
-    	rate[i]=interest_rate;//test value
-    	sigma_test[i]=sample_sigma;//test value
+    	ttm[i]=time_to_maturity[i];
+    	rate[i]=interest_rate;
+    	sigma_test[i]=dynamic_sigma[i];
     	call_price[i]=0;
     	put_price[i]=0;
-    	ttm[i]=time_to_maturity[i];
+
     }
+   // sigma_test[0]=0.315;
+
 
    long sizeBytes = size * sizeof(float);
 	BAW(size,strike_arr,sizeBytes,price_arr,sizeBytes,rate,sizeBytes,sigma_test,sizeBytes,ttm,sizeBytes,call_price,sizeBytes,put_price,sizeBytes);
@@ -218,22 +305,45 @@ double sigma = 0;
 	if(type==0)
 	{
 		//header printing
-			fprintf(output,"S,K,r,sigma,TTM,Call,Market,Error\n");
+			fprintf(output,"S,K,r,sigma,TTM,Call,Bid,Ask,Percent_diff\n");
 		for(int i=0;i<size;i++)
 		{
-		printf("%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,sample_sigma,time_to_maturity[i],call_price[i],midprice[i],fabs(call_price[i]-midprice[i]));
-		fprintf(output,"%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,sample_sigma,time_to_maturity[i],call_price[i],midprice[i],fabs(call_price[i]-midprice[i]));
+			if(call_price[i]>ask[i]){
+				fprintf(output,"%f,%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,dynamic_sigma[i],time_to_maturity[i],call_price[i],bid[i],ask[i],fabs(call_price[i]-ask[i])/ask[i]*100);
+
+			}
+			else if(call_price[i]<bid[i]){
+				fprintf(output,"%f,%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,dynamic_sigma[i],time_to_maturity[i],call_price[i],bid[i],ask[i],fabs(call_price[i]-bid[i])/bid[i]*100);
+			}
+			else{
+				float mid=(bid[i]+ask[i])/2.0;
+				//printf("%f,%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,dynamic_sigma[i],time_to_maturity[i],call_price[i],bid[i],ask[i],fabs(call_price[i]-mid)/mid*100);
+				fprintf(output,"%f,%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,dynamic_sigma[i],time_to_maturity[i],call_price[i],bid[i],ask[i],fabs(call_price[i]-mid)/mid*100);
+			}
 		}
 	}
 
 	else{
 		//header printing
-			fprintf(output,"S,K,r,sigma,TTM,Put,Market,Error\n");
-		for(int i=0;i<size;i++)
+			fprintf(output,"S,K,r,sigma,TTM,Put,Bid,Ask,Percent_diff\n");
+
+			for(int i=0;i<size;i++)
+			{
+				if(put_price[i]>ask[i])
 				{
-				printf("%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,sample_sigma,time_to_maturity[i],put_price[i],midprice[i],fabs(put_price[i]-midprice[i]));
-				fprintf(output,"%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,sample_sigma,time_to_maturity[i],put_price[i],midprice[i],fabs(put_price[i]-midprice[i]));
+					fprintf(output,"%f,%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,dynamic_sigma[i],time_to_maturity[i],put_price[i],bid[i],ask[i],fabs(put_price[i]-ask[i])/ask[i]*100);
 				}
+				else if(put_price[i]<bid[i])
+				{
+					fprintf(output,"%f,%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,dynamic_sigma[i],time_to_maturity[i],put_price[i],bid[i],ask[i],fabs(put_price[i]-bid[i])/bid[i]*100);
+				}
+				else
+				{
+					float mid=(bid[i]+ask[i])/2.0;
+					//printf("%f,%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,dynamic_sigma[i],time_to_maturity[i],call_price[i],bid[i],ask[i],fabs(put_price[i]-mid)/mid*100);
+					fprintf(output,"%f,%f,%f,%f,%f,%f,%f,%f,%f\n", underlying[i],strike[i],interest_rate,dynamic_sigma[i],time_to_maturity[i],call_price[i],bid[i],ask[i],fabs(put_price[i]-mid)/mid*100);
+				}
+			}
 	}
 
 	fclose(call_option_stream);
