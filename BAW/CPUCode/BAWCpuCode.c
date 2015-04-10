@@ -59,8 +59,8 @@ inline double option_price_put_black_scholes( const double *S,      // spot pric
 
 double get_lagged_underly(int current_t,int lag,const double *underly,const int *second){
 
-    if(lag==-1){//used previous trading data
-        if(current_t>0)return underly[current_t-1];
+    if(lag<0){//used previous trading data
+        if(current_t+lag>0)return underly[current_t+lag];
         else return -1;
     }
 
@@ -86,8 +86,8 @@ double get_lagged_underly(int current_t,int lag,const double *underly,const int 
 
 double get_lagged_strike(int current_t,int lag,const double *k,const int *second){
 
-    if(lag==-1){//used previous trading data
-        if(current_t>0)return k[current_t-1];
+    if(lag<0){//used previous trading data
+        if(current_t+lag>0)return k[current_t+lag];
         else return -1;
     }
 
@@ -112,8 +112,8 @@ double get_lagged_strike(int current_t,int lag,const double *k,const int *second
 
 double get_lagged_ttm(int current_t,int lag,const double *t,const int *second){
 
-    if(lag==-1){//used previous trading data
-        if(current_t>0)return t[current_t-1];
+    if(lag<0){//used previous trading data
+        if(current_t+lag>0)return t[current_t+lag];
         else return -1;
     }
 
