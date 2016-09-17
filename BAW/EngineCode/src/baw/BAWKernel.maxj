@@ -10,6 +10,18 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 
 class BAWKernel extends Kernel
 {
+	/*
+
+		This kernel will calculate the approximated value of CDF of normal
+		distribution N(0,1). The algorithm is adapted from the same function
+		in CPUCode.
+
+		Parameter
+			DFEVar z: the value to be calculated for normal CDF
+
+		Return
+			DFEVar n: the approximated value of CDF
+	*/
 	DFEVar cdf(DFEVar z)
 	{
 		DFEVar b1 = constant.var(dfeFloat(8,24),0.31938153);
@@ -66,6 +78,9 @@ class BAWKernel extends Kernel
 		return (exp_time)*(S*cdf(d1) - X*cdf(d2));
 	}
 
+	/*
+		Main kernel to calculate the option pricing based on whaley model.
+	*/
 	BAWKernel(KernelParameters parameters) {
 		super(parameters);
 
@@ -109,6 +124,7 @@ class BAWKernel extends Kernel
 	    DFEVar flag1_put = constant.var(dfeBool(), 0);
 	    DFEVar flag2_put = constant.var(dfeBool(),0);
 
+	    // main loop for whaley calculation
 	    for (int i = 0; i < 10; i=i+1)
 	    {
 	    	d1 = (KernelMath.log(log_range, (Si_put*X_inv),dfeFloat(8, 24)) + (0.5 * sigma_sqr) * time) * (sigma_time_sqrt_inv);
@@ -160,10 +176,7 @@ class BAWKernel extends Kernel
         DFEVar A2 = (1.0 - exp_time * cdf(d1)) * (S_star * q2_inv);
         C = (S > S_star) ? (S-X) : c + A2 *KernelMath.exp(q2*KernelMath.log(log_range, S/S_star, dfeFloat(8,24)));
 	    C = KernelMath.max(c, C);
-	    //C.simWatch("Call_price");
-	    //P.simWatch("Put_price");
-	    //debug.simPrintf("end\n");
-	    ///debug.simPrintf("call price=%g,put price=%g\n",C,P);
+
 		io.output("call_price",C, dfeFloat(8, 24));
 		io.output("put_price",P, dfeFloat(8, 24));
 	}
