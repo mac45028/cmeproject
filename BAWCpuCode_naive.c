@@ -15,8 +15,8 @@
 #include "MaxSLiCInterface.h"
 #include "Maxfiles.h"
 
-
-#define risk_free 0.0003 // assume risk-free interest rate is 0.03%
+// Assume risk-free interest rate is 0.03%
+#define risk_free 0.0003 
 
 // Data-array for Maxeler Engine
 float *maxeler_call_price;
@@ -658,6 +658,8 @@ int main()
 
 	const char *output_file = "/home/demo/Desktop/call_merge_output_result.csv";
 
+	long data_size_byte = file_line_count * sizeof(float);
+
     initialized_parameter(type, input_file, output_file, file_line_count);
 
     import_data();
@@ -665,8 +667,6 @@ int main()
     calculate_implied_volatility(file_line_count, type);
 
     prepare_data_array_for_maxeler(file_line_count, risk_free);
-
-    long data_size_byte = file_line_count * sizeof(float);
 
     call_maxeler(file_line_count, data_size_byte);
 
