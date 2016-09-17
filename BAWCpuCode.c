@@ -1,6 +1,6 @@
 /*
 	This is a main CPU code for Maxeler FPGA board. The goal here is to
-	calcualte the American style call/put option pricing based on Whaley model.
+	calculate the American style call/put option pricing based on Whaley model.
 
 	For brevity, we will assume that all external factors, such as malloc, fopen, 
 	perform smoothly.
