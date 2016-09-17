@@ -645,7 +645,7 @@ unsigned int correctly_price_sample = 0;
 
 	Main function will control the overall flow of program. The main function
 	will load the data samples from files and prepare them to be used in 
-	implied volatility calculation and, ultimately,and in Maxeler DFU engine.
+	implied volatility calculation and, ultimately, in Maxeler DFU engine.
 
 */
 int main()
