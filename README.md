@@ -10,4 +10,4 @@ in batch.
 
 Result:
 
-The FPGA can price the option correctly as designed and the performance is around ~800 contacts per second.
+The algorithm can price the option correctly as designed and the performance is around ~800 contacts per second.
