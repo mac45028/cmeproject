@@ -1,8 +1,13 @@
-# cmeproject - Alpha Build
-Updated from master repo:
+# cmeproject
 
--implied volatility are included in the project
+Goals:
 
--Fixed the Scalar input issue, by using inputstream instead
+The goal of this project is to calculate the American style option pricing based on Whaley model.
 
-The performance is significantly improved, comparing to the previous version on main repo.
+The sample data will be prepared by the pc size and then send them all to FPGA to calculate the option
+
+in batch. 
+
+Result:
+
+The FPGA can price the option correctly as designed and the performance is around ~800 contacts per second.
